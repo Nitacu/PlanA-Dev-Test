@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using PuzzleGame.Core.Models;
+using PuzzleGame.Core.Services;
 using PuzzleGame.Unity.Views;
+using UnityEngine;
 using VContainer.Unity;
 
 namespace PuzzleGame.Core.Presenters
@@ -8,58 +12,78 @@ namespace PuzzleGame.Core.Presenters
     public class GamePresenter : IStartable, IDisposable
     {
         private readonly IGameState _gameState;
+        private readonly IGridService _gridService;
         private readonly GameView _gameView;
         
+        private const int GAME_COLORS_AMOUNT = 4;
         private bool _isProcessingTurn;
-        private const int TEST_SCORE_INCREMENT = 10;
 
-        public GamePresenter(IGameState gameState, GameView gameView)
+        public GamePresenter(IGameState gameState, IGridService gridService, GameView gameView)
         {
             _gameState = gameState;
+            _gridService = gridService;
             _gameView = gameView;
         }
 
         public void Start()
         {
             _gameView.ReplayButton.onClick.AddListener(OnReplayClicked);
-            _gameView.MakeMoveTestButton.onClick.AddListener(OnMakeMoveTestClicked);
-
             InitializeGame();
         }
 
         private void InitializeGame()
         {
-            _gameState?.ResetState();
-            _gameView?.ShowGameOver(false);
-            _gameView?.EnableTestButton(true);
+            _isProcessingTurn = false;
+            _gameState.ResetState();
+            _gridService.GenerateGrid(GAME_COLORS_AMOUNT);
+            
+            _gameView.ShowGameOver(false);
             UpdateView();
         }
 
         /// <summary>
-        /// Task 2 specific logic: Decrease move by 1, increase score by 10.
+        /// Task 3 specific logic: Collects blocks via flood fill, handles async gravity delay.
+        /// Should be hooked directly to the UI block Tap/Click events.
         /// </summary>
-        private void OnMakeMoveTestClicked()
+        public async void OnBlockClicked(int x, int y)
         {
-            if (_gameState?.Moves <= 0) return;
+            // Validate move state to avoid issues clicking block while gravity takes place
+            if (_gameState.Moves <= 0 || _isProcessingTurn) return;
 
-            _gameState.AddScore(TEST_SCORE_INCREMENT);
-            _gameState.UseMove();
-            UpdateView();
-
-            if (_gameState.Moves <= 0)
+            List<Vector2Int> connectedBlocks = _gridService.GetConnectedBlocks(x, y);
+            
+            // Require at least 2 connected block matching color (optional rule)
+            if (connectedBlocks.Count >= 1) 
             {
-                _gameView?.ShowGameOver(true);
-                _gameView?.EnableTestButton(false);
+                _isProcessingTurn = true;
+
+                _gameState.AddScore(connectedBlocks.Count);
+                _gridService.RemoveBlocks(connectedBlocks);
+                
+                UpdateView(); 
+                
+                // Wait 1 second before applying gravity execution
+                await Task.Delay(1000);
+
+                _gridService.ApplyGravity();
+                _gridService.RefillGrid(GAME_COLORS_AMOUNT);
+
+                _gameState.UseMove();
+                UpdateView();
+
+                if (_gameState.Moves <= 0)
+                {
+                    _gameView.ShowGameOver(true);
+                }
+
+                _isProcessingTurn = false;
             }
         }
 
         private void UpdateView()
         {
-            if (_gameView != null && _gameState != null)
-            {
-                _gameView.UpdateScore(_gameState.Score);
-                _gameView.UpdateMoves(_gameState.Moves);
-            }
+            _gameView.UpdateScore(_gameState.Score);
+            _gameView.UpdateMoves(_gameState.Moves);
         }
 
         private void OnReplayClicked()
@@ -69,11 +93,8 @@ namespace PuzzleGame.Core.Presenters
 
         public void Dispose()
         {
-            if (_gameView != null)
-            {
-                if (_gameView.ReplayButton != null) _gameView.ReplayButton.onClick.RemoveListener(OnReplayClicked);
-                if (_gameView.MakeMoveTestButton != null) _gameView.MakeMoveTestButton.onClick.RemoveListener(OnMakeMoveTestClicked);
-            }
+            if (_gameView != null && _gameView.ReplayButton != null)
+                _gameView.ReplayButton.onClick.RemoveListener(OnReplayClicked);
         }
     }
 }

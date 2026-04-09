@@ -1,12 +1,10 @@
-using System;
-
 namespace PuzzleGame.Core.Models
 {
     public interface IGameState
     {
         int Score { get; }
         int Moves { get; }
-        void AddScore(int points);
+        void AddScore(int blocksDestroyed);
         void UseMove();
         void ResetState();
     }
@@ -17,16 +15,19 @@ namespace PuzzleGame.Core.Models
         public int Moves { get; private set; }
         
         private const int INITIAL_MOVES = 5;
-        private const int TEST_SCORE_INCREMENT = 10;
 
         public GameState()
         {
             ResetState();
         }
 
-        public void AddScore(int points)
+        public void AddScore(int blocksDestroyed)
         {
-            Score += points;
+            if (blocksDestroyed <= 0) return;
+            
+            // Formula for sum of 1 to N is: N * (N + 1) / 2
+            int pointsEarned = (blocksDestroyed * (blocksDestroyed + 1)) / 2;
+            Score += pointsEarned;
         }
 
         public void UseMove()
