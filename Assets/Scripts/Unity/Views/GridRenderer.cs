@@ -11,13 +11,6 @@ namespace PuzzleGame.Unity.Views
         [SerializeField] private GameObject _blockPrefab;
         [SerializeField] private Transform _gridParent;
         
-        [Header("Block Prefabs")]
-        [SerializeField] private GameObject _greenBlockPrefab;
-        [SerializeField] private GameObject _purpleBlockPrefab;
-        [SerializeField] private GameObject _yellowBlockPrefab;
-        [SerializeField] private GameObject _brownBlockPrefab;
-        [SerializeField] private GameObject _pinkBlockPrefab;
-        
         private const int GRID_WIDTH = 6;
         private const int GRID_HEIGHT = 5;
         private const float CELL_WIDTH = 1.28f; // 128px at 100px/unit
@@ -25,23 +18,12 @@ namespace PuzzleGame.Unity.Views
         private const float BLOCK_SIZE = 1.28f; // 128px at 100px/unit
         
         private BlockView[,] _blockViews;
-        private readonly Dictionary<BlockColor, GameObject> _blockPrefabs = new Dictionary<BlockColor, GameObject>();
 
         public UnityEvent<Vector2Int> OnBlockClicked = new UnityEvent<Vector2Int>();
 
         private void Awake()
         {
-            InitializeBlockPrefabs();
             CreateGrid();
-        }
-
-        private void InitializeBlockPrefabs()
-        {
-            _blockPrefabs[BlockColor.GREEN] = _greenBlockPrefab;
-            _blockPrefabs[BlockColor.PURPLE] = _purpleBlockPrefab;
-            _blockPrefabs[BlockColor.YELLOW] = _yellowBlockPrefab;
-            _blockPrefabs[BlockColor.BROWN] = _brownBlockPrefab;
-            _blockPrefabs[BlockColor.PINK] = _pinkBlockPrefab;
         }
 
         private void CreateGrid()
@@ -56,7 +38,8 @@ namespace PuzzleGame.Unity.Views
                     GameObject blockObject = Instantiate(_blockPrefab, position, Quaternion.identity, _gridParent);
                     
                     BlockView blockView = blockObject.GetComponent<BlockView>();
-                    blockView.Initialize(BlockColor.GREEN, new Vector2Int(x, y));
+                    BlockColor randomColor = (BlockColor)Random.Range(0, (int)BlockColor.PINK + 1);
+                    blockView.Initialize(randomColor, new Vector2Int(x, y));
                     blockView.OnBlockClicked.AddListener(OnBlockViewClicked);
                     
                     _blockViews[x, y] = blockView;
