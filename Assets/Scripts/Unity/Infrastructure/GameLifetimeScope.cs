@@ -22,6 +22,7 @@ namespace PuzzleGame.Unity.Infrastructure
             
             // 3. Views
             builder.RegisterComponent(gameView);
+            builder.RegisterComponent(gameView.GridRenderer);
             
             // 4. Presenters
             builder.RegisterEntryPoint<GamePresenter>();

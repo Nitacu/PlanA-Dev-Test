@@ -15,7 +15,7 @@ namespace PuzzleGame.Core.Presenters
         private readonly IGridService _gridService;
         private readonly GameView _gameView;
         
-        private const int GAME_COLORS_AMOUNT = 4;
+        private const int GAME_COLORS_AMOUNT = 5;
         private bool _isProcessingTurn;
 
         public GamePresenter(IGameState gameState, IGridService gridService, GameView gameView)
@@ -28,6 +28,7 @@ namespace PuzzleGame.Core.Presenters
         public void Start()
         {
             _gameView.ReplayButton.onClick.AddListener(OnReplayClicked);
+            _gameView.GridRenderer.OnBlockClicked.AddListener(OnBlockClicked);
             InitializeGame();
         }
 
@@ -45,12 +46,12 @@ namespace PuzzleGame.Core.Presenters
         /// Task 3 specific logic: Collects blocks via flood fill, handles async gravity delay.
         /// Should be hooked directly to the UI block Tap/Click events.
         /// </summary>
-        public async void OnBlockClicked(int x, int y)
+        public async void OnBlockClicked(Vector2Int gridPosition)
         {
             // Validate move state to avoid issues clicking block while gravity takes place
             if (_gameState.Moves <= 0 || _isProcessingTurn) return;
 
-            List<Vector2Int> connectedBlocks = _gridService.GetConnectedBlocks(x, y);
+            List<Vector2Int> connectedBlocks = _gridService.GetConnectedBlocks(gridPosition.x, gridPosition.y);
             
             // Require at least 2 connected block matching color (optional rule)
             if (connectedBlocks.Count >= 1) 
@@ -84,6 +85,7 @@ namespace PuzzleGame.Core.Presenters
         {
             _gameView.UpdateScore(_gameState.Score);
             _gameView.UpdateMoves(_gameState.Moves);
+            _gameView.GridRenderer.UpdateGrid(_gridService);
         }
 
         private void OnReplayClicked()
@@ -93,8 +95,13 @@ namespace PuzzleGame.Core.Presenters
 
         public void Dispose()
         {
-            if (_gameView != null && _gameView.ReplayButton != null)
-                _gameView.ReplayButton.onClick.RemoveListener(OnReplayClicked);
+            if (_gameView != null)
+            {
+                if (_gameView.ReplayButton != null) 
+                    _gameView.ReplayButton.onClick.RemoveListener(OnReplayClicked);
+                if (_gameView.GridRenderer != null) 
+                    _gameView.GridRenderer.OnBlockClicked.RemoveListener(OnBlockClicked);
+            }
         }
     }
 }
