@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using PuzzleGame.Core.Models;
 using PuzzleGame.Core.Services;
+using UnityEngine.Events;
 
 namespace PuzzleGame.Unity.Views
 {
@@ -10,12 +11,15 @@ namespace PuzzleGame.Unity.Views
         [Header("Grid Configuration")]
         [SerializeField] private GameObject _blockPrefab;
         [SerializeField] private Transform _gridParent;
-        
-        private const int GRID_WIDTH = 6;
-        private const int GRID_HEIGHT = 5;
-        private const float CELL_WIDTH = 1.28f; // 128px at 100px/unit
-        private const float CELL_HEIGHT = 1.12f; // 112px at 100px/unit
-        private const float BLOCK_SIZE = 1.28f; // 128px at 100px/unit
+        [SerializeField] private Transform _gridCenter;
+
+        [SerializeField] private const int GRID_WIDTH = 5;
+        [SerializeField] private const int GRID_HEIGHT = 6;
+        [SerializeField] private const float CELL_WIDTH = 0.67368421f; // 128px / 190px per unit
+        [SerializeField] private const float CELL_HEIGHT = 0.67368421f; // 128px / 190px per unit
+        [SerializeField] private const float BLOCK_SIZE = 0.67368421f; // 128px / 190px per unit
+        [SerializeField] private float rowSizeReduction = 0f;
+        [SerializeField] private int baseSortingOrder = 0;
         
         private BlockView[,] _blockViews;
 
@@ -23,6 +27,7 @@ namespace PuzzleGame.Unity.Views
 
         private void Awake()
         {
+            if (_gridCenter == null) Debug.LogError("Grid Center transform is not assigned!");
             CreateGrid();
         }
 
@@ -30,12 +35,28 @@ namespace PuzzleGame.Unity.Views
         {
             _blockViews = new BlockView[GRID_WIDTH, GRID_HEIGHT];
             
+            // Calculate grid center offset with row size reduction
+            float gridWidthUnits = (GRID_WIDTH - 1) * CELL_WIDTH;
+            float gridHeightUnits = (GRID_HEIGHT - 1) * (CELL_HEIGHT - rowSizeReduction);
+            Vector3 centerOffset = new Vector3(-gridWidthUnits / 2f, -gridHeightUnits / 2f, 0);
+            Vector3 basePosition = _gridCenter != null ? _gridCenter.position : Vector3.zero;
+            
             for (int x = 0; x < GRID_WIDTH; x++)
             {
                 for (int y = 0; y < GRID_HEIGHT; y++)
                 {
-                    Vector3 position = new Vector3(x * CELL_WIDTH, y * CELL_HEIGHT, 0);
+                    float adjustedCellHeight = CELL_HEIGHT - rowSizeReduction;
+                    Vector3 position = basePosition + centerOffset + new Vector3(x * CELL_WIDTH, y * adjustedCellHeight, 0);
                     GameObject blockObject = Instantiate(_blockPrefab, position, Quaternion.identity, _gridParent);
+                    
+                    // Set sprite renderer sorting order - higher values render on top
+                    SpriteRenderer spriteRenderer = blockObject.GetComponent<SpriteRenderer>();
+                    if (spriteRenderer != null)
+                    {
+                        // Start at layer 2 and increase from bottom to top
+                        int sortingOrder = 2 + y;
+                        spriteRenderer.sortingOrder = sortingOrder;
+                    }
                     
                     BlockView blockView = blockObject.GetComponent<BlockView>();
                     BlockColor randomColor = (BlockColor)Random.Range(0, (int)BlockColor.PINK + 1);

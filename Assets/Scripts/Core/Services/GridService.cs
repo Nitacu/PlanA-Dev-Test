@@ -15,8 +15,8 @@ namespace PuzzleGame.Core.Services
 
     public class GridService : IGridService
     {
-        private const int GRID_WIDTH = 6;
-        private const int GRID_HEIGHT = 5;
+        private const int GRID_WIDTH = 5;
+        private const int GRID_HEIGHT = 6;
         
         public int[,] Grid { get; private set; }
 
