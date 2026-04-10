@@ -1,0 +1,23 @@
+{
+    "name": "PuzzleGame",
+    "rootNamespace": "PuzzleGame",
+    "references": [
+        "Unity.Addressables",
+        "Unity.ResourceManager",
+        "Unity.TextMeshPro",
+        "Unity.Mathematics",
+        "Unity.Collections",
+        "UnityEngine",
+        "UnityEngine.UI",
+        "VContainer"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

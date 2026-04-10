@@ -1,0 +1,21 @@
+{
+    "name": "PuzzleGame.Tests.EditMode",
+    "rootNamespace": "PuzzleGame.Tests.EditMode",
+    "references": [
+        "PuzzleGame",
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "NUnit"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
