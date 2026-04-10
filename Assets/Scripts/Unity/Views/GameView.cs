@@ -4,8 +4,25 @@ using TMPro;
 
 namespace PuzzleGame.Unity.Views
 {
+    /// <summary>
+    /// GameView implements the main View in MVP pattern for UI presentation.
+    /// 
+    /// Architecture Decision: Property exposure over method calls
+    /// - Why properties: Clearer API, supports Unity inspector serialization
+    /// - Why not direct field access: Encapsulation, validation, future flexibility
+    /// - Supports: Clean separation between view logic and data access
+    /// 
+    /// Architecture Decision: Component references via SerializeField
+    /// - Why SerializeField: Unity manages component lifecycle and assignment
+    /// - Why not Find() calls: Performance, explicit dependencies, editor support
+    /// - Supports: Proper Unity integration, scene management, performance
+    /// </summary>
     public class GameView : MonoBehaviour
     {
+        // Serialized component references - architectural pattern for Unity integration
+// Benefits: Explicit dependencies, editor assignment, performance optimization
+// Alternative considered: Runtime component discovery - rejected for performance
+// Supports: Proper Unity lifecycle, scene management, debugging
         [Header("HUD")]
         [SerializeField] private TextMeshProUGUI _scoreText;
         [SerializeField] private TextMeshProUGUI _movesText;

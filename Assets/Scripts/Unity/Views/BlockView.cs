@@ -4,11 +4,28 @@ using PuzzleGame.Core.Models;
 
 namespace PuzzleGame.Unity.Views
 {
+    /// <summary>
+    /// BlockView implements the View component in MVP pattern for individual puzzle blocks.
+    /// 
+    /// Architecture Decision: Unity Events over direct method calls
+    /// - Why Unity Events: Decouples view from presenter, allowing multiple subscribers
+    /// - Enables runtime flexibility: Different presenters can subscribe to same events
+    /// - Supports inspector configuration: Events can be wired in Unity Editor
+    /// 
+    /// Architecture Decision: Serialized prefab references for colors
+    /// - Why not runtime loading: Prefabs provide visual consistency and performance
+    /// - Why not single sprite: Different colors need distinct visual representations
+    /// - Supports: Artist workflow, visual assets managed through Unity's prefab system
+    /// </summary>
     public class BlockView : MonoBehaviour
     {
         [SerializeField] private BlockColor _blockColor;
         [SerializeField] private SpriteRenderer _spriteRenderer;
         
+        // Serialized prefab references - architectural decision for visual management
+// Why not Addressables: Prefabs are core game assets, always loaded
+// Why not runtime sprite loading: Prefabs provide complete visual packages
+// Supports: Artist workflow, visual consistency, performance optimization
         [Header("Color Prefabs")]
         [SerializeField] private GameObject _greenPrefab;
         [SerializeField] private GameObject _purplePrefab;
@@ -19,6 +36,9 @@ namespace PuzzleGame.Unity.Views
         public BlockColor BlockColor => _blockColor;
         public Vector2Int GridPosition { get; private set; }
         
+        // Unity Event for click handling - architectural choice for loose coupling
+// Benefits: Multiple listeners can subscribe, no direct presenter dependency
+// Alternative considered: Direct method calls via interface - rejected for flexibility
         public UnityEvent<BlockView> OnBlockClicked = new UnityEvent<BlockView>();
 
         public void Initialize(BlockColor color, Vector2Int gridPosition)

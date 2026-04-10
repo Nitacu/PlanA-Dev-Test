@@ -9,6 +9,19 @@ using VContainer.Unity;
 
 namespace PuzzleGame.Core.Presenters
 {
+    /// <summary>
+    /// GamePresenter implements the Presenter in MVP pattern, coordinating between Model and View.
+    /// 
+    /// Architecture Decision: Constructor injection via VContainer
+    /// - Why constructor injection: Ensures all dependencies are available at initialization
+    /// - Why VContainer: Unity-native DI container with proper lifetime management
+    /// - Supports: Testability, loose coupling, automatic dependency resolution
+    /// 
+    /// Architecture Decision: Async operations with Task.Delay
+    /// - Why async: Prevents UI blocking during gravity/refill animations
+    /// - Why not coroutines: Task-based async integrates better with modern C# patterns
+    /// - Supports: Smooth gameplay experience, proper animation timing
+    /// </summary>
     public class GamePresenter : IStartable, IDisposable
     {
         private readonly IGameState _gameState;
@@ -18,6 +31,10 @@ namespace PuzzleGame.Core.Presenters
         private const int GAME_COLORS_AMOUNT = 5;
         private bool _isProcessingTurn;
 
+        // VContainer dependency injection - architectural choice for loose coupling
+// Benefits: Automatic dependency resolution, proper lifetime management
+// Testability: Mocks can be injected for unit testing
+// Alternative considered: Service Locator pattern - rejected for explicit dependencies
         public GamePresenter(IGameState gameState, IGridService gridService, GameView gameView)
         {
             _gameState = gameState;
@@ -27,6 +44,10 @@ namespace PuzzleGame.Core.Presenters
 
         public void Start()
         {
+            // Unity Event subscription - architectural pattern for view communication
+// Why events: Decouples presenter from view implementation details
+// Supports: Multiple view types, runtime flexibility, testability
+// Note: Proper cleanup in Dispose() prevents memory leaks
             _gameView.ReplayButton.onClick.AddListener(OnReplayClicked);
             _gameView.GridRenderer.OnBlockClicked.AddListener(OnBlockClicked);
             InitializeGame();

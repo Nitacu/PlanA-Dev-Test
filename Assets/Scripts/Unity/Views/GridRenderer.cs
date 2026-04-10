@@ -6,6 +6,19 @@ using UnityEngine.Events;
 
 namespace PuzzleGame.Unity.Views
 {
+    /// <summary>
+    /// GridRenderer manages visual grid representation - architectural bridge between data and visuals.
+    /// 
+    /// Architecture Decision: Unity Events for block click communication
+    /// - Why events: Decouples grid rendering from input handling logic
+    /// - Supports: Multiple input systems, different interaction patterns
+    /// - Enables: Runtime flexibility, testability, clean separation of concerns
+    /// 
+    /// Architecture Decision: In-place block updates over object pooling
+    /// - Why in-place updates: Simpler implementation, sufficient for current scale
+    /// - Why not pooling: 6x5 grid (30 blocks) doesn't warrant complexity
+    /// - Supports: Code maintainability, development speed, adequate performance
+    /// </summary>
     public class GridRenderer : MonoBehaviour
     {
         [Header("Grid Configuration")]
@@ -23,6 +36,10 @@ namespace PuzzleGame.Unity.Views
         
         private BlockView[,] _blockViews;
 
+        // Unity Event for block clicks - architectural choice for loose coupling
+// Benefits: GridRenderer doesn't need to know about input handling
+// Supports: Different input methods (mouse, touch, keyboard), future flexibility
+// Note: Passes grid coordinates for presenter logic processing
         public UnityEvent<Vector2Int> OnBlockClicked = new UnityEvent<Vector2Int>();
 
         private void Awake()

@@ -3,6 +3,20 @@ using UnityEngine;
 
 namespace PuzzleGame.Core.Services
 {
+    /// <summary>
+    /// GridService implements core puzzle logic - pure algorithms without Unity dependencies.
+    /// 
+    /// Architecture Decision: Interface for testability
+    /// - Why IGridService: Enables mocking in unit tests, supports different implementations
+    /// - Why not static class: Dependency injection, state management, testability
+    /// - Supports: Clean architecture, unit testing, future algorithm variations
+    /// 
+    /// Architecture Decision: 2D array for grid representation
+    /// - Why 2D array: Direct mapping to visual grid, excellent performance
+    /// - Why not List<List<int>>: Memory overhead, unnecessary complexity
+    /// - Why not custom Grid class: 2D array provides all needed functionality
+    /// - Supports: Performance, simplicity, direct coordinate access
+    /// </summary>
     public interface IGridService
     {
         int[,] Grid { get; }
@@ -18,6 +32,10 @@ namespace PuzzleGame.Core.Services
         private const int GRID_WIDTH = 5;
         private const int GRID_HEIGHT = 6;
         
+        // 2D array grid representation - architectural decision for performance
+// Benefits: O(1) access by coordinates, memory efficient, cache-friendly
+// Alternative considered: Dictionary<Vector2Int, int> - rejected for performance
+// Supports: Direct visual mapping, flood fill algorithm efficiency
         public int[,] Grid { get; private set; }
 
         public GridService()
